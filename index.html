@@ -279,7 +279,7 @@ const TM=[
   ['Екатерина Соколова','Креативный директор','team/team-03.jpg'],
   ['Дмитрий Лебедев','Ведущий архитектор','team/team-04.jpg']
 ];
-$('#tms').innerHTML=TM.map((t,i)=>`<div class="tm cr r"><img src="${U(t[2],700)}" alt="Портрет: ${t[0]}, ${t[1]}" loading="lazy"><span class="mono absolute" style="left:1rem;top:1rem;z-index:3;color:var(--lime)">0${i+1}</span><i></i><i></i><i></i><i></i>
+$('#tms').innerHTML=TM.map((t,i)=>`<div class="tm cr r"><img src="${U(t[2])}" alt="Портрет: ${t[0]}, ${t[1]}" loading="lazy"><span class="mono absolute" style="left:1rem;top:1rem;z-index:3;color:var(--lime)">0${i+1}</span><i></i><i></i><i></i><i></i>
 <div class="cap"><h3 class="text-xl font-medium">${t[0]}</h3><p class="mono mt-2">${t[1]}</p></div></div>`).join('');
 lucide.createIcons();
 
