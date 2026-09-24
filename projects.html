@@ -178,21 +178,21 @@ footer a{display:block;color:var(--mu);padding:.2rem 0;transition:color .3s}foot
 <script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
-const U=(id,w)=>`https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=70`;
+const U=(id)=>`assets/img/${id}`;
 
 /* ---------- Данные: [название, локация, год, категория, тип · площадь, фото, файл, alt] ---------- */
 const CAT={residential:'Жилые',public:'Общественные',interior:'Интерьеры',restoration:'Реставрация',competition:'Конкурсы'};
 const PJ=[
-['ЖК «Северный луч»','Санкт-Петербург','2024','residential','Жилой комплекс · 42 000 м²','1486406146926-c627a92ad1ab','severny-luch','Жилой комплекс из стекла и бетона'],
-['Резиденция «Дюны»','Сочи','2023','residential','Частная резиденция · 1 200 м²','1512917774080-9991f1c4c750','duny','Минималистичный дом у моря'],
-['Офис «Киберпорт»','Москва','2024','public','Общественное пространство · 8 600 м²','1497366216548-37526070297c','cyberport','Офисное здание со стеклянным фасадом'],
-['Музей «Тишина»','Казань','2022','public','Музей · 4 200 м²','1518005020951-eccb494ad742','tishina','Бетонное здание музея'],
-['Реставрация «Дом Челищева»','Санкт-Петербург','2021','restoration','Памятник XVIII века · 2 800 м²','1467269204594-9661b134dd2b','chelishchev','Фасад исторического здания'],
-['Отель «Атлас»','Дубай','2025','public','Отель · 18 000 м²','1512453979798-5ea266f8880c','atlas','Башня отеля из стекла в Дубае'],
-['Павильон «Волна»','Берлин','2023','competition','Конкурсный проект · 600 м²','1511818966892-d7d671e672a2','volna','Деревянный павильон с изогнутой кровлей'],
-['ЖК «Горизонт»','Екатеринбург','2024','residential','Жилой комплекс · 56 000 м²','1545324418-cc1a3fa10c00','gorizont','Высотный жилой комплекс на фоне панорамы']];
+['ЖК «Северный луч»','Санкт-Петербург','2024','residential','Жилой комплекс · 42 000 м²','projects/project-01.jpg','severny-luch','Жилой комплекс из стекла и бетона'],
+['Резиденция «Дюны»','Сочи','2023','residential','Частная резиденция · 1 200 м²','projects/project-02.jpg','duny','Минималистичный дом у моря'],
+['Офис «Киберпорт»','Москва','2024','public','Общественное пространство · 8 600 м²','projects/project-03.jpg','cyberport','Офисное здание со стеклянным фасадом'],
+['Музей «Тишина»','Казань','2022','public','Музей · 4 200 м²','projects/project-04.jpg','tishina','Бетонное здание музея'],
+['Реставрация «Дом Челищева»','Санкт-Петербург','2021','restoration','Памятник XVIII века · 2 800 м²','projects/project-05.jpg','chelishchev','Фасад исторического здания'],
+['Отель «Атлас»','Дубай','2025','public','Отель · 18 000 м²','projects/project-06.jpg','atlas','Башня отеля из стекла в Дубае'],
+['Павильон «Волна»','Берлин','2023','competition','Конкурсный проект · 600 м²','projects/project-07.jpg','volna','Деревянный павильон с изогнутой кровлей'],
+['ЖК «Горизонт»','Екатеринбург','2024','residential','Жилой комплекс · 56 000 м²','projects/project-08.jpg','gorizont','Высотный жилой комплекс на фоне панорамы']];
 $('#pg').innerHTML=PJ.map((p,i)=>`<a href="404.html" class="pc" data-cat="${p[3]}" aria-label="Проект ${p[0]}, ${p[1]}, ${p[2]}">
-<div class="ph cr"><img src="${U(p[5],1200)}" alt="${p[7]}" loading="lazy"><span class="n">0${i+1}</span><span class="bd">${CAT[p[3]]}</span><i></i><i></i><i></i><i></i><span class="see mono" style="color:var(--lime)">Смотреть проект</span></div>
+<div class="ph cr"><img src="${U(p[5])}" alt="${p[7]}" loading="lazy"><span class="n">0${i+1}</span><span class="bd">${CAT[p[3]]}</span><i></i><i></i><i></i><i></i><span class="see mono" style="color:var(--lime)">Смотреть проект</span></div>
 <div class="flex items-start justify-between gap-4 mt-5"><div><h3 style="font-size:clamp(1.5rem,2.5vw,2.5rem);font-weight:700;line-height:1.05">${p[0]}</h3>
 <p class="mono mt-3">${p[1]}, ${p[2]}</p><p class="mono mt-1" style="opacity:.7;font-size:.66rem">${p[4]}</p></div><span class="ar disp text-3xl">→</span></div></a>`).join('');
 $('#fbs').innerHTML=[['all','Все'],...Object.entries(CAT)].map((c,i)=>`<button class="fb${i?'':' on'}" data-f="${c[0]}" aria-pressed="${!i}">${c[1]}</button>`).join('');

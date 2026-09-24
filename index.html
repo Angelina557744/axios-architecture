@@ -247,18 +247,18 @@ footer a{display:block;color:var(--mu);padding:.2rem 0;transition:color .3s;text
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const RM=matchMedia('(prefers-reduced-motion:reduce)').matches, MOB=innerWidth<768;
-const U=(id,w)=>`https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=70`;
+const U=(id)=>`assets/img/${id}`;
 
 /* ВАЖНО: переменные курсора объявлены ЗДЕСЬ, до использования */
 let cx=0,cy=0,rx=0,ry=0;
 
 /* ---------- Данные и генерация карточек ---------- */
 const PJ=[
-  ['ЖК «Северный луч»','Санкт-Петербург, 2024','1486406146926-c627a92ad1ab','Жилой комплекс · 42 000 м²','severny-luch'],
-  ['Резиденция «Дюны»','Сочи, 2023','1512917774080-9991f1c4c750','Частная резиденция · 1 200 м²','duny'],
-  ['Офис «Киберпорт»','Москва, 2024','1497366216548-37526070297c','Общественное пространство · 8 600 м²','cyberport']
+  ['ЖК «Северный луч»','Санкт-Петербург, 2024','projects/project-01.jpg','Жилой комплекс · 42 000 м²','severny-luch'],
+  ['Резиденция «Дюны»','Сочи, 2023','projects/project-02.jpg','Частная резиденция · 1 200 м²','duny'],
+  ['Офис «Киберпорт»','Москва, 2024','projects/project-03.jpg','Общественное пространство · 8 600 м²','cyberport']
 ];
-$('#pjs').innerHTML=PJ.map((p,i)=>`<a href="404.html" class="pj cr r" aria-label="Проект ${p[0]}"><img src="${U(p[2],1600)}" alt="${p[0]} — ${p[1]}" loading="lazy"><span class="n">0${i+1}</span><i></i><i></i><i></i><i></i>
+$('#pjs').innerHTML=PJ.map((p,i)=>`<a href="404.html" class="pj cr r" aria-label="Проект ${p[0]}"><img src="${U(p[2])}" alt="${p[0]} — ${p[1]}" loading="lazy"><span class="n">0${i+1}</span><i></i><i></i><i></i><i></i>
 <div class="cap"><h3 class="text-3xl md:text-5xl font-bold">${p[0]}</h3><p class="mono mt-3" style="color:var(--lime)">${p[1]} · ${p[3]}</p></div></a>`).join('');
 
 const SV=[
@@ -274,10 +274,10 @@ const ST=[['Исследование','Анализ участка, контек
 $('#steps').innerHTML=ST.map((s,i)=>`<div class="step"><span class="mono lime">0${i+1}</span><h3 class="text-2xl font-medium mt-3">${s[0]}</h3><p class="mt-3" style="color:var(--mu);font-size:.95rem">${s[1]}</p></div>`).join('');
 
 const TM=[
-  ['Анна Ветрова','Основатель, главный архитектор','1573496359142-b8d87734a5a2'],
-  ['Михаил Орлов','Партнёр, руководитель проектов','1500648767791-00dcc994a43e'],
-  ['Екатерина Соколова','Креативный директор','1580489944761-15a19d654956'],
-  ['Дмитрий Лебедев','Ведущий архитектор','1472099645785-5658abf4ff4e']
+  ['Анна Ветрова','Основатель, главный архитектор','team/team-01.jpg'],
+  ['Михаил Орлов','Партнёр, руководитель проектов','team/team-02.jpg'],
+  ['Екатерина Соколова','Креативный директор','team/team-03.jpg'],
+  ['Дмитрий Лебедев','Ведущий архитектор','team/team-04.jpg']
 ];
 $('#tms').innerHTML=TM.map((t,i)=>`<div class="tm cr r"><img src="${U(t[2],700)}" alt="Портрет: ${t[0]}, ${t[1]}" loading="lazy"><span class="mono absolute" style="left:1rem;top:1rem;z-index:3;color:var(--lime)">0${i+1}</span><i></i><i></i><i></i><i></i>
 <div class="cap"><h3 class="text-xl font-medium">${t[0]}</h3><p class="mono mt-2">${t[1]}</p></div></div>`).join('');

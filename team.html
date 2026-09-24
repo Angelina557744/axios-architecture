@@ -216,22 +216,22 @@ footer a{display:block;color:var(--mu);padding:.2rem 0;transition:color .3s;text
 <script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
-const U=(id,w)=>`https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=70`;
+const U=(id)=>`assets/img/${id}`;
 
 /* ---------- Данные команды ---------- */
 const TM=[
-  {n:'Анна Ветрова',r:'Основатель, главный архитектор',c:'lead',p:'1573496359142-b8d87734a5a2'},
-  {n:'Михаил Орлов',r:'Партнёр, руководитель проектов',c:'lead',p:'1500648767791-00dcc994a43e'},
-  {n:'Екатерина Соколова',r:'Креативный директор',c:'lead',p:'1580489944761-15a19d654956'},
-  {n:'Дмитрий Лебедев',r:'Ведущий архитектор',c:'arch',p:'1472099645785-5658abf4ff4e'},
-  {n:'Ольга Морозова',r:'Архитектор',c:'arch',p:'1494790108377-be9c29b29330'},
-  {n:'Сергей Волков',r:'BIM-инженер',c:'eng',p:'1507003211169-0a1dd7228f2d'},
-  {n:'Нина Павлова',r:'Интерьерный дизайнер',c:'arch',p:'1544005313-94ddf0286df2'},
-  {n:'Артём Захаров',r:'Визуализатор',c:'vis',p:'1506794778202-cad84cf45f1d'},
-  {n:'Мария Крылова',r:'Ландшафтный архитектор',c:'arch',p:'1438761681033-6461ffad8d80'},
-  {n:'Иван Белов',r:'Инженер-конструктор',c:'eng',p:'1519085360753-af0119f7cbe7'},
-  {n:'Татьяна Романова',r:'Руководитель реставрации',c:'arch',p:'1487412720507-e7ab37603c6f'},
-  {n:'Павел Соловьёв',r:'Урбанист',c:'arch',p:'1500648767791-00dcc994a43e'}
+  {n:'Анна Ветрова',r:'Основатель, главный архитектор',c:'lead',p:'team/team-01.jpg'},
+  {n:'Михаил Орлов',r:'Партнёр, руководитель проектов',c:'lead',p:'team/team-02.jpg'},
+  {n:'Екатерина Соколова',r:'Креативный директор',c:'lead',p:'team/team-03.jpg'},
+  {n:'Дмитрий Лебедев',r:'Ведущий архитектор',c:'arch',p:'team/team-04.jpg'},
+  {n:'Ольга Морозова',r:'Архитектор',c:'arch',p:'team/team-05.jpg'},
+  {n:'Сергей Волков',r:'BIM-инженер',c:'eng',p:'team/team-06.jpg'},
+  {n:'Нина Павлова',r:'Интерьерный дизайнер',c:'arch',p:'team/team-07.jpg'},
+  {n:'Артём Захаров',r:'Визуализатор',c:'vis',p:'team/team-08.jpg'},
+  {n:'Мария Крылова',r:'Ландшафтный архитектор',c:'arch',p:'team/team-09.jpg'},
+  {n:'Иван Белов',r:'Инженер-конструктор',c:'eng',p:'team/team-10.jpg'},
+  {n:'Татьяна Романова',r:'Руководитель реставрации',c:'arch',p:'team/team-11.jpg'},
+  {n:'Павел Соловьёв',r:'Урбанист',c:'arch',p:'team/team-12.jpg'}
 ];
 const CAT={lead:'Руководство',arch:'Архитектор',eng:'Инженер',vis:'Визуализатор'};
 
@@ -239,7 +239,7 @@ const CAT={lead:'Руководство',arch:'Архитектор',eng:'Инж
 function render(items){
   $('#grid').innerHTML=items.map((t,i)=>`
     <div class="tm cr r" data-cat="${t.c}" role="link" tabindex="0" aria-label="${t.n} — ${t.r}">
-      <img src="${U(t.p,700)}" alt="Портрет: ${t.n}, ${t.r}" loading="lazy">
+      <img src="${U(t.p)}" alt="Портрет: ${t.n}, ${t.r}" loading="lazy">
       <span class="num">${String(i+1).padStart(2,'0')}</span>
       <span class="cat">${CAT[t.c]}</span>
       <i></i><i></i><i></i><i></i>
