@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Контакты — AXIOS</title>
+<meta name="description" content="AXIOS — архитектурное бюро. Расскажите о проекте — вернёмся с идеями в течение 24 часов.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+:root{--bg:#0A0A0B;--bg2:#121214;--bg3:#1A1A1E;--lime:#C6FF3D;--sand:#E8E2D5;--tx:#F5F5F0;--mu:#8A8A8F;--er:#FF6B4A}
+html{scrollbar-width:none;background:var(--bg)}html::-webkit-scrollbar{display:none}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:Inter,sans-serif;overflow-x:hidden}
+h1,h2,h3,.disp{font-family:'Space Grotesk',sans-serif;letter-spacing:-.02em}
+.mono{font-family:'JetBrains Mono',monospace;font-size:.72rem;text-transform:uppercase;letter-spacing:.14em;color:var(--mu)}
+.lime{color:var(--lime)}
+:focus-visible{outline:2px solid var(--lime);outline-offset:4px}
+section{position:relative;padding:15vh 5vw}
+.grid-bg{background-image:linear-gradient(rgba(245,245,240,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(245,245,240,.03) 1px,transparent 1px);background-size:60px 60px}
+.h2{font-size:clamp(2.4rem,6vw,5.5rem);line-height:.95;font-weight:700;margin-top:1.5rem}
+/* Шум (grain) */
+#grain{position:fixed;inset:0;z-index:98;pointer-events:none;opacity:.03;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E")}
+/* Прогресс скролла */
+#prog{position:fixed;top:0;left:0;right:0;height:2px;background:var(--lime);transform:scaleX(0);transform-origin:left;z-index:60}
+/* Прелоадер */
+#pre{position:fixed;inset:0;z-index:100;pointer-events:none}
+#pre .t,#pre .b{position:absolute;left:0;right:0;height:50.1%;background:var(--bg)}#pre .t{top:0}#pre .b{bottom:0}
+#pre .mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2}
+#logo path,#logo circle{fill:none;stroke:var(--tx);stroke-width:1.5;stroke-dasharray:1;stroke-dashoffset:1}
+#bar{width:min(320px,60vw);height:1px;background:var(--lime);transform:scaleX(0);transform-origin:left;margin-top:2rem}
+#pre .c{position:absolute;z-index:3}
+/* Курсор */
+.dot,.ring{position:fixed;top:0;left:0;pointer-events:none;z-index:99;border-radius:50%}
+.dot{width:6px;height:6px;background:var(--lime);margin:-3px 0 0 -3px}
+.ring{width:38px;height:38px;margin:-19px 0 0 -19px;border:1px solid var(--lime);transition:width .3s,height .3s,margin .3s,background .3s}
+.ring.big{width:72px;height:72px;margin:-36px 0 0 -36px;background:rgba(198,255,61,.08)}
+@media(hover:none),(max-width:768px){.dot,.ring{display:none}}
+@media(hover:hover) and (min-width:769px){body,a,button,input,textarea,select{cursor:none}}
+/* Хедер */
+header{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:1.2rem 5vw;transition:background .4s,backdrop-filter .4s}
+header.sc{background:rgba(10,10,11,.7);backdrop-filter:blur(14px)}
+.brand{font:700 1.4rem 'Space Grotesk';letter-spacing:.18em;display:flex;align-items:center;gap:.7rem}
+.brand i{width:1px;height:22px;background:var(--lime);position:relative}.brand i:after{content:"";position:absolute;left:-2px;top:8px;width:5px;height:5px;border-radius:50%;background:var(--lime)}
+.brand span{display:inline-block;transition:transform .4s}.brand:hover span{transform:scale(1.02)}
+.nl{position:relative;font-size:.9rem;padding:.3rem 0}
+.nl:after,.ul:after{content:"";position:absolute;left:0;bottom:0;height:1px;width:100%;background:var(--lime);transform:scaleX(0);transform-origin:left;transition:transform .4s}
+.nl:hover:after,.ul:hover:after,.nl.act:after{transform:scaleX(1)}.nl.act{color:var(--lime)}.ul{position:relative}
+.btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:.6rem;border:1px solid var(--lime);color:var(--lime);padding:.8rem 1.5rem;font-size:.9rem;background:transparent;z-index:0;transition:color .4s}
+.btn:before{content:"";position:absolute;left:50%;top:50%;width:0;height:0;border-radius:50%;background:var(--lime);transform:translate(-50%,-50%);transition:width .5s,height .5s;z-index:-1}
+.btn:hover{color:var(--bg)}.btn:hover:before{width:320%;padding-bottom:320%;height:0}
+.btn.solid{background:var(--lime);color:var(--bg);font-size:1.05rem;padding:1.2rem 2.6rem}
+.btn.solid:before{background:var(--bg)}.btn.solid:hover{color:var(--lime)}
+.btn:disabled{opacity:.5;pointer-events:none}
+#menu{position:fixed;inset:0;z-index:45;background:var(--bg);display:flex;flex-direction:column;justify-content:center;padding:0 8vw;gap:.5rem;clip-path:inset(0 0 100% 0)}
+#menu a{font:700 clamp(2.2rem,10vw,4rem) 'Space Grotesk'}#menu a.act{color:var(--lime)}
+.line{overflow:hidden;padding-bottom:.08em}
+/* Форма */
+.field{position:relative;margin-bottom:1.6rem}
+.field label{display:block;margin-bottom:.5rem;font-family:'JetBrains Mono',monospace;font-size:.7rem;text-transform:uppercase;letter-spacing:.14em;color:var(--mu);transition:color .3s}
+.field:focus-within label{color:var(--lime)}
+.field input,.field select,.field textarea{width:100%;background:var(--bg);border:1px solid rgba(198,255,61,.15);color:var(--tx);padding:1rem;font-family:Inter,sans-serif;font-size:1rem;transition:border-color .3s,box-shadow .3s;outline:none}
+.field input::placeholder,.field textarea::placeholder{color:rgba(138,138,143,.6)}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--lime);box-shadow:0 0 0 3px rgba(198,255,61,.08)}
+.field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C6FF3D' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 1rem center}
+.field textarea{resize:vertical;min-height:120px}
+.field.err input,.field.err select,.field.err textarea{border-color:var(--er)}
+.field .msg{display:none;margin-top:.4rem;font-size:.8rem;color:var(--er);font-family:'JetBrains Mono',monospace}
+.field.err .msg{display:block}
+/* Чекбокс */
+.chk{display:flex;align-items:flex-start;gap:.7rem;margin-bottom:2rem;font-size:.9rem;color:var(--mu);line-height:1.5}
+.chk input{width:18px;height:18px;flex:0 0 auto;margin-top:2px;accent-color:var(--lime);cursor:pointer}
+.chk a{color:var(--lime);text-decoration:underline;text-underline-offset:3px}
+/* Преимущества */
+.adv{padding:1.5rem;border-left:1px solid rgba(198,255,61,.2);transition:border-color .4s,padding-left .4s}
+.adv:hover{border-color:var(--lime);padding-left:2rem}
+.adv .ic{width:40px;height:40px;border-radius:50%;border:1px solid var(--lime);color:var(--lime);display:grid;place-items:center;margin-bottom:1rem}
+/* Офисы */
+.ofc{position:relative;padding-top:2rem;border-top:1px solid rgba(198,255,61,.15)}
+.ofc:before{content:"";position:absolute;top:-1px;left:0;width:100%;height:1px;background:var(--lime);transform:scaleX(.12);transform-origin:left;transition:transform .7s cubic-bezier(.2,.7,.2,1)}
+.ofc:hover:before{transform:scaleX(1)}
+.ofc .nm{font-size:clamp(1.4rem,2.4vw,2rem);font-weight:500;margin-top:.6rem}
+.ofc .rw{display:flex;gap:1rem;padding:.4rem 0;color:var(--mu);font-size:.95rem}
+.ofc .rw a{color:var(--mu);transition:color .3s}.ofc .rw a:hover{color:var(--lime)}
+.ofc .rw span:first-child{color:var(--lime);font-family:'JetBrains Mono',monospace;font-size:.7rem;text-transform:uppercase;letter-spacing:.14em;min-width:70px;padding-top:.2rem}
+/* FAQ */
+.faq{border-bottom:1px solid rgba(245,245,240,.08)}
+.faq .q{width:100%;background:none;border:0;color:var(--tx);text-align:left;padding:1.8rem 0;display:flex;align-items:flex-start;gap:1.5rem;font-family:'Space Grotesk',sans-serif;font-size:clamp(1.1rem,1.8vw,1.5rem);font-weight:500;transition:color .3s}
+.faq .q:hover{color:var(--lime)}
+.faq .q .n{font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--lime);padding-top:.5rem;flex:0 0 auto;letter-spacing:.14em}
+.faq .q .t{flex:1}
+.faq .q .i{flex:0 0 auto;color:var(--lime);font-size:1.5rem;line-height:1;transition:transform .4s;padding-top:.2rem}
+.faq.op .q .i{transform:rotate(45deg)}
+.faq .a{overflow:hidden;max-height:0;transition:max-height .5s cubic-bezier(.2,.7,.2,1)}
+.faq .a p{padding:0 0 2rem 3.2rem;color:var(--mu);line-height:1.6;max-width:60ch}
+footer{border-top:1px solid var(--lime);padding:6vh 5vw 3vh}
+.big{font:700 24vw/.85 'Space Grotesk';color:transparent;-webkit-text-stroke:1px var(--lime);text-align:center;letter-spacing:-.03em;user-select:none}
+footer a{display:block;color:var(--mu);padding:.2rem 0;transition:color .3s}footer a:hover{color:var(--lime)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body data-page="contacts">
+<div id="grain" aria-hidden="true"></div>
+<div id="prog" aria-hidden="true"></div>
+
+<!-- Прелоадер (1.5 с) -->
+<div id="pre" aria-hidden="true">
+  <div class="t"></div><div class="b"></div>
+  <div class="mid">
+    <svg id="logo" width="260" height="52" viewBox="0 0 250 44" aria-label="AXIOS">
+      <path pathLength="1" d="M2 42 L22 2 L42 42 M10 27 H34"/><path pathLength="1" d="M56 2 L96 42 M96 2 L56 42"/>
+      <path pathLength="1" d="M110 2 V42"/><circle pathLength="1" cx="146" cy="22" r="20"/>
+      <path pathLength="1" d="M228 8 C218 -2 188 2 194 16 C200 28 230 22 226 36 C222 46 196 44 190 36"/>
+    </svg>
+    <div id="bar"></div>
+  </div>
+  <div class="c mono" style="left:5vw;top:2rem">AXIOS / Architecture bureau / Est. 2012</div>
+  <div class="c mono" style="right:5vw;top:2rem">Loading assets</div>
+  <div class="c lime" id="pct" style="right:5vw;bottom:2rem;font:500 2rem 'JetBrains Mono'">000%</div>
+</div>
+
+<div class="dot"></div><div class="ring"></div>
+
+<!-- ХЕДЕР -->
+<header id="hd">
+  <a href="index.html" class="brand" aria-label="AXIOS — на главную"><i></i><span>AXIOS</span></a>
+  <nav class="hidden lg:flex gap-10" aria-label="Основная навигация">
+    <a class="nl" data-p="about" href="about.html">О бюро</a>
+    <a class="nl" data-p="services" href="services.html">Услуги</a>
+    <a class="nl" data-p="projects" href="projects.html">Проекты</a>
+    <a class="nl" data-p="team" href="team.html">Команда</a>
+    <a class="nl" data-p="contacts" href="contacts.html">Контакты</a>
+  </nav>
+  <a href="contacts.html" class="btn hidden lg:inline-flex">Обсудить проект</a>
+  <button id="burger" class="lg:hidden mono" style="color:var(--lime)" aria-label="Открыть меню" aria-expanded="false">Меню</button>
+</header>
+<div id="menu" aria-hidden="true">
+  <a data-p="about" href="about.html">О бюро</a>
+  <a data-p="services" href="services.html">Услуги</a>
+  <a data-p="projects" href="projects.html">Проекты</a>
+  <a data-p="team" href="team.html">Команда</a>
+  <a data-p="contacts" href="contacts.html">Контакты</a>
+</div>
+
+<main>
+<!-- 01. HERO -->
+<section id="hero" class="grid-bg" style="min-height:100vh;padding-top:9rem;display:flex;flex-direction:column">
+  <nav class="mono crumbs" aria-label="Хлебные крошки"><a href="index.html" class="ul" style="color:var(--tx)">Главная</a> / <span>Контакты</span></nav>
+  <div class="mono mt-16">01 / 04 · Контакты</div>
+  <div class="my-auto py-12 flex flex-col gap-12 lg:flex-row lg:items-end lg:justify-between">
+    <div>
+      <h1 style="font-size:clamp(3rem,10vw,9rem);line-height:.92;font-weight:700"><div class="line">Начнём проект.</div></h1>
+      <p class="sub mt-8 max-w-xl" style="color:var(--sand);font-size:1.2rem;line-height:1.5">Расскажите о задаче — мы вернёмся с идеями в течение 24 часов. Или просто напишите, если хотите познакомиться.</p>
+    </div>
+    <div class="sub mono leading-8" style="border-left:1px solid var(--lime);padding-left:1.2rem">
+      <a href="mailto:hello@axios.ru" class="lime ul" style="color:var(--lime)">hello@axios.ru</a><br>
+      <a href="tel:+78120000000" style="color:var(--tx)" class="ul">+7 812 000-00-00</a><br>
+      <span style="color:var(--mu)">Санкт-Петербург · Дубай · Берлин</span>
+    </div>
+  </div>
+</section>
+
+<!-- 02. ФОРМА -->
+<section id="form-sec" style="background:var(--bg2)">
+  <div class="mono">02 / 04 · Заявка</div>
+  <h2 class="h2 sp">Расскажите о проекте</h2>
+
+  <div class="grid gap-16 mt-20 lg:grid-cols-[1.4fr_1fr]">
+    <!-- Форма -->
+    <form id="contact-form" action="https://api.web3forms.com/submit" method="POST" novalidate>
+      <!-- ВАЖНО: замени YOUR_ACCESS_KEY_HERE на свой ключ с web3forms.com -->
+      <input type="hidden" name="access_key" value="c24b7e92-1b5a-4855-a990-038be66aae96">
+      <input type="hidden" name="redirect" value="thanks.html">
+      <input type="hidden" name="subject" value="Новая заявка с сайта AXIOS">
+      <input type="hidden" name="from_name" value="AXIOS Website">
+      <!-- Honeypot для ботов -->
+      <input type="checkbox" name="botcheck" style="display:none">
+
+      <div class="field rv">
+        <label for="name">Имя *</label>
+        <input type="text" id="name" name="name" placeholder="Как к вам обращаться?" required>
+        <span class="msg">Укажите имя</span>
+      </div>
+
+      <div class="grid gap-6 sm:grid-cols-2">
+        <div class="field rv">
+          <label for="email">Email *</label>
+          <input type="email" id="email" name="email" placeholder="you@example.com" required>
+          <span class="msg">Укажите корректный email</span>
+        </div>
+        <div class="field rv">
+          <label for="phone">Телефон</label>
+          <input type="tel" id="phone" name="phone" placeholder="+7 ___ ___-__-__">
+          <span class="msg">Проверьте номер</span>
+        </div>
+      </div>
+
+      <div class="grid gap-6 sm:grid-cols-2">
+        <div class="field rv">
+          <label for="project_type">Тип проекта *</label>
+          <select id="project_type" name="project_type" required>
+            <option value="">Выберите тип</option>
+            <option>Архитектура</option>
+            <option>Интерьеры</option>
+            <option>Градостроительство</option>
+            <option>Реставрация</option>
+            <option>Другое</option>
+          </select>
+          <span class="msg">Выберите тип проекта</span>
+        </div>
+        <div class="field rv">
+          <label for="budget">Бюджет</label>
+          <select id="budget" name="budget">
+            <option value="">Не указан</option>
+            <option>До 5 млн ₽</option>
+            <option>5–20 млн ₽</option>
+            <option>20–50 млн ₽</option>
+            <option>50+ млн ₽</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field rv">
+        <label for="message">Сообщение *</label>
+        <textarea id="message" name="message" placeholder="Расскажите о задаче, сроках, контексте..." required></textarea>
+        <span class="msg">Напишите пару слов о проекте</span>
+      </div>
+
+      <div class="field rv">
+        <label class="chk">
+          <input type="checkbox" name="agree" id="agree" required>
+          <span>Я согласен с <a href="privacy.html">политикой конфиденциальности</a> и обработкой персональных данных *</span>
+        </label>
+        <span class="msg">Необходимо согласие</span>
+      </div>
+
+      <button type="submit" id="submit-btn" class="btn solid rv">Отправить заявку</button>
+      <p id="form-status" class="mono mt-6" style="display:none"></p>
+    </form>
+
+    <!-- Преимущества -->
+    <aside class="flex flex-col gap-6">
+      <div class="adv rv">
+        <div class="ic"><i data-lucide="clock" width="18"></i></div>
+        <h3 class="text-xl font-medium">24 часа</h3>
+        <p class="mt-2" style="color:var(--mu);font-size:.95rem">Отвечаем на заявку в течение суток, даже в выходные.</p>
+      </div>
+      <div class="adv rv">
+        <div class="ic"><i data-lucide="shield-check" width="18"></i></div>
+        <h3 class="text-xl font-medium">NDA</h3>
+        <p class="mt-2" style="color:var(--mu);font-size:.95rem">Подпишем соглашение о конфиденциальности до начала обсуждения.</p>
+      </div>
+      <div class="adv rv">
+        <div class="ic"><i data-lucide="sparkles" width="18"></i></div>
+        <h3 class="text-xl font-medium">Бесплатно</h3>
+        <p class="mt-2" style="color:var(--mu);font-size:.95rem">Первая консультация и оценка проекта — бесплатно.</p>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- 03. ОФИСЫ -->
+<section id="offices">
+  <div class="mono">03 / 04 · Офисы</div>
+  <h2 class="h2 sp">Где мы находимся</h2>
+  <div id="ofcs" class="grid gap-10 mt-20 md:grid-cols-3"></div>
+</section>
+
+<!-- 04. FAQ -->
+<section id="faq-sec" style="background:var(--bg2)">
+  <div class="mono">04 / 04 · FAQ</div>
+  <h2 class="h2 sp">Частые вопросы</h2>
+  <div id="faqs" class="mt-16 max-w-4xl"></div>
+</section>
+</main>
+
+<!-- ФУТЕР -->
+<footer>
+  <div class="big" aria-hidden="true">AXIOS</div>
+  <div class="grid gap-10 mt-12 sm:grid-cols-2 lg:grid-cols-4">
+    <div><div class="mono mb-4">Навигация</div><a href="about.html">О бюро</a><a href="services.html">Услуги</a><a href="projects.html">Проекты</a><a href="team.html">Команда</a><a href="contacts.html">Контакты</a></div>
+    <div><div class="mono mb-4">Контакты</div><a href="mailto:hello@axios.ru">hello@axios.ru</a><a href="tel:+78120000000">+7 812 000-00-00</a><span style="color:var(--mu)">Санкт-Петербург,<br>наб. реки Мойки, 12</span></div>
+    <div><div class="mono mb-4">Соцсети</div><a href="https://www.behance.net" target="_blank" rel="noopener">Behance</a><a href="https://www.instagram.com" target="_blank" rel="noopener">Instagram</a><a href="https://t.me" target="_blank" rel="noopener">Telegram</a><a href="https://www.linkedin.com" target="_blank" rel="noopener">LinkedIn</a></div>
+    <div><div class="mono mb-4">Правовое</div><a href="privacy.html">Политика конфиденциальности</a><span style="color:var(--mu)">© 2026 AXIOS</span></div>
+  </div>
+  <div class="mono mt-16 text-center">Сделано с любовью к форме / SPB — DXB — BER</div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/split-type@0.3.4/umd/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.394.0/dist/umd/lucide.min.js"></script>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+/* ---------- Данные: офисы ---------- */
+const OFC=[
+  {n:'Санкт-Петербург',s:'Главный офис',a:'наб. реки Мойки, 12',t:'+7 812 000-00-00',e:'spb@axios.ru',h:'Пн–Пт: 10:00–19:00'},
+  {n:'Дубай',s:'Офис в ОАЭ',a:'Dubai Design District, Building 6',t:'+971 4 000 0000',e:'dxb@axios.ru',h:'Вс–Чт: 9:00–18:00'},
+  {n:'Берлин',s:'Офис в Европе',a:'Torstraße 140',t:'+49 30 0000 0000',e:'ber@axios.ru',h:'Пн–Пт: 9:00–18:00'}
+];
+$('#ofcs').innerHTML=OFC.map((o,i)=>`
+  <div class="ofc rv">
+    <div class="flex justify-between items-start">
+      <span class="mono lime">0${i+1}</span>
+      <span class="mono">${o.s}</span>
+    </div>
+    <h3 class="nm">${o.n}</h3>
+    <div class="mt-6 flex flex-col gap-1">
+      <div class="rw"><span>Адрес</span><span>${o.a}</span></div>
+      <div class="rw"><span>Тел</span><a href="tel:${o.t.replace(/\s/g,'')}">${o.t}</a></div>
+      <div class="rw"><span>Email</span><a href="mailto:${o.e}">${o.e}</a></div>
+      <div class="rw"><span>Часы</span><span>${o.h}</span></div>
+    </div>
+  </div>`).join('');
+
+/* ---------- Данные: FAQ ---------- */
+const FAQ=[
+  ['Сколько стоит проект?','Стоимость зависит от площади, сложности и сроков. Ориентировочно: архитектура — от 3 000 ₽/м², интерьеры — от 5 000 ₽/м². Точную смету даём после знакомства с задачей.'],
+  ['Сколько времени занимает проект?','Частная резиденция — 4–8 месяцев. Жилой комплекс — 12–24 месяца. Реставрация — от 6 месяцев. Сроки фиксируем в договоре.'],
+  ['Вы работаете с регионами?','Да. У нас есть проекты в Москве, Казани, Сочи, Екатеринбурге. Ведём проекты удалённо с выездами на ключевые этапы.'],
+  ['Можно ли заказать только концепцию?','Да. Мы можем сделать концепцию и передать её вашему архитектору. Или вести проект полностью — от эскиза до авторского надзора.'],
+  ['Подписываете ли NDA?','Да, всегда. Если нужно — подпишем соглашение о конфиденциальности до начала обсуждения проекта.']
+];
+$('#faqs').innerHTML=FAQ.map((f,i)=>`
+  <div class="faq rv">
+    <button class="q" aria-expanded="false">
+      <span class="n">0${i+1}</span>
+      <span class="t">${f[0]}</span>
+      <span class="i">+</span>
+    </button>
+    <div class="a"><p>${f[1]}</p></div>
+  </div>`).join('');
+
+/* ---------- FAQ аккордеон ---------- */
+$$('.faq').forEach(f=>{
+  const btn=f.querySelector('.q'),a=f.querySelector('.a');
+  btn.onclick=()=>{
+    const open=f.classList.contains('op');
+    // Закрыть все
+    $$('.faq').forEach(x=>{x.classList.remove('op');x.querySelector('.a').style.maxHeight=0;x.querySelector('.q').setAttribute('aria-expanded','false')});
+    if(!open){
+      f.classList.add('op');
+      a.style.maxHeight=a.scrollHeight+'px';
+      btn.setAttribute('aria-expanded','true');
+    }
+  };
+});
+
+/* ---------- Активный пункт меню ---------- */
+const pg=document.body.dataset.page;
+$$('[data-p]').forEach(a=>{if(a.dataset.p===pg){a.classList.add('act');a.setAttribute('aria-current','page')}});
+
+/* ---------- Бургер-меню ---------- */
+let open=false;const bg=$('#burger');
+bg.onclick=()=>{open=!open;bg.textContent=open?'Закрыть':'Меню';bg.setAttribute('aria-expanded',open);$('#menu').setAttribute('aria-hidden',!open);
+ gsap.to('#menu',{clipPath:open?'inset(0 0 0% 0)':'inset(0 0 100% 0)',duration:.7,ease:'power3.inOut'});
+ if(open)gsap.from('#menu a',{y:60,opacity:0,stagger:.08,delay:.3,duration:.6})};
+$$('#menu a').forEach(a=>a.onclick=()=>{if(open)bg.click()});
+
+/* ---------- Курсор ---------- */
+let cx=0,cy=0,rx=0,ry=0;const dot=$('.dot'),ring=$('.ring');
+addEventListener('pointermove',e=>{cx=e.clientX;cy=e.clientY});
+(function cu(){requestAnimationFrame(cu);rx+=(cx-rx)*.15;ry+=(cy-ry)*.15;dot.style.transform=`translate(${cx}px,${cy}px)`;ring.style.transform=`translate(${rx}px,${ry}px)`})();
+document.addEventListener('pointerover',e=>{const h=e.target.closest('a,button,input,select,textarea,label');ring.classList.toggle('big',!!h);dot.style.opacity=h?0:1});
+
+/* ---------- Валидация и отправка формы ---------- */
+const form=$('#contact-form'),btn=$('#submit-btn'),status=$('#form-status');
+const EMAIL=/^[^\s@]+@[^\s@]+\.[^\s@]+$/,PHONE=/^[\d\s()+\-]{7,}$/;
+function setErr(field,show){const w=field.closest('.field');if(w)w.classList.toggle('err',!!show)}
+function validate(){
+  let ok=true;
+  const name=$('#name'),email=$('#email'),phone=$('#phone'),ptype=$('#project_type'),msg=$('#message'),ag=$('#agree');
+  if(!name.value.trim()){setErr(name,1);ok=false}else setErr(name,0);
+  if(!EMAIL.test(email.value.trim())){setErr(email,1);ok=false}else setErr(email,0);
+  if(phone.value.trim()&&!PHONE.test(phone.value.trim())){setErr(phone,1);ok=false}else setErr(phone,0);
+  if(!ptype.value){setErr(ptype,1);ok=false}else setErr(ptype,0);
+  if(!msg.value.trim()||msg.value.trim().length<5){setErr(msg,1);ok=false}else setErr(msg,0);
+  const w=ag.closest('.field');if(!ag.checked){w.classList.add('err');ok=false}else w.classList.remove('err');
+  return ok;
+}
+['input','change'].forEach(ev=>form.addEventListener(ev,e=>{
+  const f=e.target;if(f.closest('.field'))f.closest('.field').classList.remove('err');
+}));
+form.addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!validate()){
+    const first=form.querySelector('.field.err input,.field.err select,.field.err textarea');
+    if(first)first.focus();
+    return;
+  }
+  const orig=btn.textContent;
+  btn.disabled=true;btn.textContent='Отправляем...';
+  status.style.display='none';
+  try{
+    const res=await fetch(form.action,{method:'POST',body:new FormData(form),headers:{'Accept':'application/json'}});
+    const data=await res.json().catch(()=>({}));
+    if(res.ok&&data.success!==false){
+      status.textContent='Спасибо! Мы свяжемся в течение 24 часов.';
+      status.style.color='var(--lime)';status.style.display='block';
+      form.reset();
+      btn.textContent='Отправлено ✓';
+      // Если настроен redirect — Web3Forms сам перенаправит, если нет — оставим сообщение
+      const redir=form.querySelector('input[name="redirect"]');
+      if(redir&&redir.value){setTimeout(()=>location.href=redir.value,1200)}
+    }else{
+      throw new Error(data.message||'Ошибка');
+    }
+  }catch(err){
+    status.textContent='Что-то пошло не так. Попробуйте ещё раз или напишите на hello@axios.ru';
+    status.style.color='var(--er)';status.style.display='block';
+    btn.disabled=false;btn.textContent=orig;
+  }
+});
+
+/* ---------- GSAP ---------- */
+gsap.registerPlugin(ScrollTrigger);
+let lenis;
+if(!RM){lenis=new Lenis({lerp:.09});lenis.on('scroll',ScrollTrigger.update);gsap.ticker.add(t=>lenis.raf(t*1000));gsap.ticker.lagSmoothing(0)}
+ScrollTrigger.create({start:0,end:'max',onUpdate:s=>{$('#hd').classList.toggle('sc',s.scroll()>60);$('#prog').style.transform=`scaleX(${s.progress})`}});
+
+const heroSplit=new SplitType('#hero h1',{types:'lines,chars'});
+function heroIntro(){
+  gsap.from(heroSplit.chars,{yPercent:115,duration:1.1,stagger:.05,ease:'power4.out'});
+  gsap.from('.sub',{opacity:0,y:30,duration:1,delay:.7,stagger:.15,ease:'power3.out'});
+  gsap.from(['.crumbs','#hd'],{opacity:0,y:-10,duration:.8,delay:.4});
+}
+function scrollFx(){
+  $$('.sp').forEach(h=>{const s=new SplitType(h,{types:'chars'});gsap.from(s.chars,{yPercent:100,opacity:0,stagger:.025,duration:.8,ease:'power3.out',scrollTrigger:{trigger:h,start:'top 85%'}})});
+  gsap.set('.rv',{opacity:0,y:40});
+  ScrollTrigger.batch('.rv',{start:'top 90%',onEnter:b=>gsap.to(b,{opacity:1,y:0,stagger:.1,duration:.8,ease:'power3.out'})});
+}
+if(RM){$('#pre').remove()}
+else{
+  lenis&&lenis.stop();
+  const o={v:0},tl=gsap.timeline();
+  tl.to('#logo path,#logo circle',{strokeDashoffset:0,duration:.8,stagger:.06,ease:'power2.inOut'},0)
+    .to('#bar',{scaleX:1,duration:1,ease:'power2.inOut'},0)
+    .to(o,{v:100,duration:1,ease:'power2.inOut',onUpdate:()=>$('#pct').textContent=String(Math.round(o.v)).padStart(3,'0')+'%'},0)
+    .to('#logo path,#logo circle',{stroke:'#C6FF3D',duration:.15},1)
+    .to('#pre .mid,#pre .c',{opacity:0,duration:.2},1.15)
+    .to('#pre .t',{yPercent:-100,duration:.55,ease:'power4.inOut'},1.2)
+    .to('#pre .b',{yPercent:100,duration:.55,ease:'power4.inOut'},1.2)
+    .add(()=>{$('#pre').remove();lenis&&lenis.start();heroIntro()},1.5);
+}
+scrollFx();
+lucide.createIcons();
+</script>
+</body>
+</html>

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AXIOS — Форма, рождённая смыслом</title>
+<meta name="description" content="AXIOS — премиум-архитектурное бюро. Санкт-Петербург, с 2012 года.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+:root{--bg:#0A0A0B;--bg2:#121214;--bg3:#1A1A1E;--lime:#C6FF3D;--sand:#E8E2D5;--tx:#F5F5F0;--mu:#8A8A8F;--ln:rgba(198,255,61,.2)}
+html{scrollbar-width:none;background:var(--bg)}html::-webkit-scrollbar{display:none}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:Inter,sans-serif;overflow-x:hidden}
+h1,h2,h3,.disp{font-family:'Space Grotesk',sans-serif;letter-spacing:-.02em}
+.mono{font-family:'JetBrains Mono',monospace;font-size:.72rem;text-transform:uppercase;letter-spacing:.14em;color:var(--mu)}
+.lime{color:var(--lime)}
+a,button{cursor:pointer}
+:focus-visible{outline:2px solid var(--lime);outline-offset:4px}
+section{position:relative;padding:15vh 5vw}
+.grid-bg{background-image:linear-gradient(rgba(245,245,240,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(245,245,240,.03) 1px,transparent 1px);background-size:60px 60px}
+.h2{font-size:clamp(2.4rem,6vw,5.5rem);line-height:.95;font-weight:700;margin-top:1.5rem}
+/* Шум (grain) — как на других страницах */
+#grain{position:fixed;inset:0;z-index:98;pointer-events:none;opacity:.03;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E")}
+/* Прогресс скролла — как на других страницах */
+#prog{position:fixed;top:0;left:0;right:0;height:2px;background:var(--lime);transform:scaleX(0);transform-origin:left;z-index:60}
+/* Прелоадер */
+#pre{position:fixed;inset:0;z-index:100;pointer-events:none}
+#pre .cur-t,#pre .cur-b{position:absolute;left:0;right:0;height:50.1%;background:var(--bg)}
+#pre .cur-t{top:0}#pre .cur-b{bottom:0}
+#pre .mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2}
+#logo path,#logo circle{fill:none;stroke:var(--tx);stroke-width:1.5;stroke-dasharray:1;stroke-dashoffset:1}
+#bar{width:min(320px,60vw);height:1px;background:var(--lime);transform:scaleX(0);transform-origin:left;margin-top:2rem}
+#pre .c{position:absolute;z-index:3}
+/* Курсор */
+.dot,.ring{position:fixed;top:0;left:0;pointer-events:none;z-index:99;border-radius:50%}
+.dot{width:6px;height:6px;background:var(--lime);margin:-3px 0 0 -3px}
+.ring{width:38px;height:38px;margin:-19px 0 0 -19px;border:1px solid var(--lime);transition:width .3s,height .3s,margin .3s,background .3s}
+.ring.big{width:72px;height:72px;margin:-36px 0 0 -36px;background:rgba(198,255,61,.08)}
+@media(hover:none),(max-width:768px){.dot,.ring{display:none}}
+@media(hover:hover) and (min-width:769px){body,a,button{cursor:none}}
+/* Хедер */
+header{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:1.2rem 5vw;transition:background .4s,backdrop-filter .4s}
+header.sc{background:rgba(10,10,11,.7);backdrop-filter:blur(14px)}
+.brand{font:700 1.4rem 'Space Grotesk';letter-spacing:.18em;display:flex;align-items:center;gap:.7rem;text-decoration:none;color:var(--tx)}
+.brand i{width:1px;height:22px;background:var(--lime);position:relative}.brand i:after{content:"";position:absolute;left:-2px;top:8px;width:5px;height:5px;border-radius:50%;background:var(--lime)}
+.brand span{display:inline-block;transition:transform .4s}.brand:hover span{transform:scale(1.02)}
+.nl{position:relative;font-size:.9rem;padding:.3rem 0;text-decoration:none;color:var(--tx)}
+.nl:after,.ul:after{content:"";position:absolute;left:0;bottom:0;height:1px;width:100%;background:var(--lime);transform:scaleX(0);transform-origin:left;transition:transform .4s}
+.nl:hover:after,.ul:hover:after,.nl.act:after{transform:scaleX(1)}.nl.act{color:var(--lime)}.ul{position:relative}
+.btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:.6rem;border:1px solid var(--lime);color:var(--lime);padding:.8rem 1.5rem;font-size:.9rem;background:transparent;z-index:0;transition:color .4s;text-decoration:none}
+.btn:before{content:"";position:absolute;left:50%;top:50%;width:0;height:0;border-radius:50%;background:var(--lime);transform:translate(-50%,-50%);transition:width .5s,height .5s;z-index:-1}
+.btn:hover{color:var(--bg)}.btn:hover:before{width:320%;padding-bottom:320%;height:0}
+.btn.solid{background:var(--lime);color:var(--bg);font-size:1.1rem;padding:1.3rem 3rem}
+.btn.solid:before{background:var(--bg)}.btn.solid:hover{color:var(--lime)}
+#menu{position:fixed;inset:0;z-index:45;background:var(--bg);display:flex;flex-direction:column;justify-content:center;padding:0 8vw;gap:.5rem;clip-path:inset(0 0 100% 0)}
+#menu a{font:700 clamp(2.2rem,10vw,4rem) 'Space Grotesk';text-decoration:none;color:var(--tx)}#menu a.act{color:var(--lime)}
+/* Hero */
+#hero{height:100vh;padding:0;overflow:hidden}
+#gl{position:absolute;inset:0;width:100%;height:100%}
+.hz{position:absolute;z-index:2}
+.line{overflow:hidden;padding-bottom:.08em}
+#hero h1{font-size:clamp(2.6rem,7.6vw,8rem);line-height:.95;font-weight:700;text-align:center}
+.scrl{width:1px;height:60px;background:rgba(198,255,61,.25);position:relative;overflow:hidden}
+.scrl:after{content:"";position:absolute;left:-1px;width:3px;height:10px;background:var(--lime);border-radius:2px;animation:run 1.8s infinite ease-in-out}
+@keyframes run{0%{top:-10px}100%{top:60px}}
+/* Манифест */
+.mf{font:700 clamp(1.9rem,4.6vw,4.4rem)/1.08 'Space Grotesk';letter-spacing:-.02em}
+.mf .w{color:var(--mu);display:inline-block;margin-right:.25em}
+/* Проекты */
+.pj{position:relative;display:block;height:70vh;overflow:hidden;margin-top:3rem;background:var(--bg3);text-decoration:none;color:var(--tx)}
+.pj img{position:absolute;left:0;top:-10%;width:100%;height:120%;object-fit:cover;transition:transform 1s cubic-bezier(.2,.7,.2,1);filter:brightness(.75)}
+.pj:hover img{transform:scale(1.05)}
+.pj .n{position:absolute;left:1.5rem;top:1rem;font:500 clamp(3rem,7vw,6rem) 'JetBrains Mono';color:rgba(245,245,240,.35);z-index:2}
+.cr i{position:absolute;width:26px;height:26px;border:0 solid var(--lime);opacity:0;transition:.4s;z-index:2;pointer-events:none}
+.cr i:nth-child(1){top:18px;left:18px;border-width:2px 0 0 2px;transform:translate(12px,12px)}
+.cr i:nth-child(2){top:18px;right:18px;border-width:2px 2px 0 0;transform:translate(-12px,12px)}
+.cr i:nth-child(3){bottom:18px;left:18px;border-width:0 0 2px 2px;transform:translate(12px,-12px)}
+.cr i:nth-child(4){bottom:18px;right:18px;border-width:0 2px 2px 0;transform:translate(-12px,-12px)}
+.cr:hover i{opacity:1;transform:none}
+.cap{position:absolute;left:0;right:0;bottom:0;padding:2rem 2.2rem;background:linear-gradient(transparent,rgba(10,10,11,.92));transform:translateY(40%);opacity:0;transition:.5s;z-index:1}
+.cr:hover .cap{transform:none;opacity:1}
+/* Услуги */
+.sv{position:relative;background:var(--bg2);border:1px solid transparent;padding:2rem;min-height:340px;display:flex;flex-direction:column;transition:transform .4s,border-color .4s;text-decoration:none;color:var(--tx)}
+.sv:hover{transform:translateY(-8px);border-color:var(--lime)}
+.ic{width:52px;height:52px;border-radius:50%;background:var(--lime);color:var(--bg);display:grid;place-items:center;transition:transform .5s}
+.sv:hover .ic{transform:rotate(15deg)}
+.ar{margin-top:auto;color:var(--lime);transition:transform .4s;width:fit-content}.sv:hover .ar{transform:translateX(12px)}
+/* Цифры */
+.st{border-left:1px solid rgba(198,255,61,.2);padding:0 1.5rem}.st:first-child{border:0}
+.st b{display:block;font:700 clamp(3.5rem,8vw,7.5rem)/1 'Space Grotesk';color:var(--lime)}
+/* Процесс */
+#track{position:absolute;left:0;right:0;top:0;height:1px;background:rgba(198,255,61,.15)}
+#fill{height:1px;background:var(--lime);transform:scaleX(0);transform-origin:left;box-shadow:0 0 12px var(--lime)}
+.step{position:relative;padding-top:2rem}
+.step:before{content:"";position:absolute;top:-4px;left:0;width:9px;height:9px;border-radius:50%;background:var(--lime)}
+/* Команда — с padding-top хаком, как на team.html */
+.tm{position:relative;overflow:hidden;background:linear-gradient(135deg,#1A1A1E 0%,#121214 100%);display:block;height:0;padding-top:133.333%}
+.tm img{position:absolute;left:0;right:0;top:0;bottom:0;width:100%;height:100%;object-fit:cover;object-position:center;filter:grayscale(1) contrast(1.05);transition:filter .6s;z-index:1}
+.tm:hover img{filter:none}
+/* CTA */
+#cta{min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;overflow:hidden}
+#cta:before{content:"";position:absolute;inset:-50%;background:repeating-linear-gradient(45deg,transparent 0 70px,rgba(198,255,61,.09) 70px 71px);animation:dg 14s linear infinite}
+@keyframes dg{to{transform:translate(70px,70px)}}
+#cta>*{position:relative}
+footer{border-top:1px solid var(--lime);padding:6vh 5vw 3vh}
+.big{font:700 24vw/.85 'Space Grotesk';color:transparent;-webkit-text-stroke:1px var(--lime);text-align:center;letter-spacing:-.03em;user-select:none}
+footer a{display:block;color:var(--mu);padding:.2rem 0;transition:color .3s;text-decoration:none}footer a:hover{color:var(--lime)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body data-page="home">
+<div id="grain" aria-hidden="true"></div>
+<div id="prog" aria-hidden="true"></div>
+
+<!-- 00. ПРЕЛОАДЕР -->
+<div id="pre" aria-hidden="true">
+  <div class="cur-t"></div><div class="cur-b"></div>
+  <div class="mid">
+    <svg id="logo" width="300" height="60" viewBox="0 0 250 44" aria-label="AXIOS">
+      <path pathLength="1" d="M2 42 L22 2 L42 42 M10 27 H34"/>
+      <path pathLength="1" d="M56 2 L96 42 M96 2 L56 42"/>
+      <path pathLength="1" d="M110 2 V42"/>
+      <circle pathLength="1" cx="146" cy="22" r="20"/>
+      <path pathLength="1" d="M228 8 C218 -2 188 2 194 16 C200 28 230 22 226 36 C222 46 196 44 190 36"/>
+    </svg>
+    <div id="bar"></div>
+  </div>
+  <div class="c mono" style="left:5vw;top:2rem">AXIOS / Architecture bureau / Est. 2012</div>
+  <div class="c mono" style="right:5vw;top:2rem">Loading assets</div>
+  <div class="c disp lime" id="pct" style="right:5vw;bottom:2rem;font:500 2rem 'JetBrains Mono'">000%</div>
+</div>
+
+<div class="dot"></div><div class="ring"></div>
+
+<!-- ХЕДЕР -->
+<header id="hd">
+  <a href="index.html" class="brand" aria-label="AXIOS — на главную"><i></i><span>AXIOS</span></a>
+  <nav class="hidden lg:flex gap-10" aria-label="Основная навигация">
+    <a class="nl" data-p="about" href="about.html">О бюро</a>
+    <a class="nl" data-p="services" href="services.html">Услуги</a>
+    <a class="nl" data-p="projects" href="projects.html">Проекты</a>
+    <a class="nl" data-p="team" href="team.html">Команда</a>
+    <a class="nl" data-p="contacts" href="contacts.html">Контакты</a>
+  </nav>
+  <a href="contacts.html" class="btn hidden lg:inline-flex">Обсудить проект</a>
+  <button id="burger" class="lg:hidden mono" style="color:var(--lime)" aria-label="Открыть меню" aria-expanded="false">Меню</button>
+</header>
+<div id="menu" aria-hidden="true">
+  <a data-p="about" href="about.html">О бюро</a>
+  <a data-p="services" href="services.html">Услуги</a>
+  <a data-p="projects" href="projects.html">Проекты</a>
+  <a data-p="team" href="team.html">Команда</a>
+  <a data-p="contacts" href="contacts.html">Контакты</a>
+</div>
+
+<main>
+<!-- 01. HERO -->
+<section id="hero" class="grid-bg">
+  <canvas id="gl" aria-hidden="true"></canvas>
+  <div class="hz mono" style="left:5vw;top:6rem">01 / 09 · Hero</div>
+  <div class="hz w-full px-4 text-center" style="top:50%;transform:translateY(-50%)">
+    <h1><div class="line">Форма,</div><div class="line">рождённая смыслом.</div></h1>
+    <p class="mono mt-8 sub" style="color:var(--sand)">Архитектурное бюро AXIOS · Санкт-Петербург · Дубай · Берлин</p>
+  </div>
+  <div class="hz mono" style="left:5vw;bottom:2.2rem" id="clock">SPB --:-- / 14°C</div>
+  <div class="hz" style="right:5vw;bottom:1.6rem"><a href="projects.html" class="btn hidden md:inline-flex" aria-label="Перейти к проектам">Смотреть проекты <i data-lucide="arrow-down" width="16"></i></a></div>
+  <div class="hz flex flex-col items-center gap-2 left-1/2 -translate-x-1/2" style="bottom:2rem"><span class="mono">Scroll</span><div class="scrl"></div></div>
+</section>
+
+<!-- 02. МАНИФЕСТ -->
+<section id="manifest">
+  <div class="mono">02 / 09 · Манифест</div>
+  <div class="mt-[12vh] max-w-6xl mx-auto">
+    <p class="mf" id="mf">Мы не рисуем здания. Мы проектируем <span class="k">опыт пребывания</span> в пространстве.</p>
+    <p class="mt-12 max-w-xl" style="color:var(--sand);font-size:1.2rem;line-height:1.5">AXIOS — это ось, вокруг которой вращается форма, свет и человек.</p>
+  </div>
+</section>
+
+<!-- 03. ПРОЕКТЫ -->
+<section id="projects" style="background:var(--bg2)">
+  <div class="flex justify-between items-end"><div class="mono">03 / 09 · Избранные проекты</div><a href="projects.html" class="ul lime pb-1" style="text-decoration:none">Все проекты →</a></div>
+  <div id="pjs"></div>
+</section>
+
+<!-- 04. УСЛУГИ -->
+<section id="services">
+  <div class="mono">04 / 09 · Услуги</div>
+  <h2 class="h2">Что мы проектируем</h2>
+  <div id="svs" class="grid gap-4 mt-16 md:grid-cols-2 lg:grid-cols-4"></div>
+</section>
+
+<!-- 05. ЦИФРЫ -->
+<section style="background:var(--bg2);padding:12vh 5vw">
+  <div class="mono mb-12">05 / 09 · Цифры</div>
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-y-12">
+    <div class="st"><b data-n="87">0</b><span class="mono">реализованных проектов</span></div>
+    <div class="st"><b data-n="14">0</b><span class="mono">лет на рынке</span></div>
+    <div class="st"><b data-n="9">0</b><span class="mono">наград</span></div>
+    <div class="st"><b data-n="3">0</b><span class="mono">страны</span></div>
+  </div>
+</section>
+
+<!-- 06. ПРОЦЕСС -->
+<section id="process">
+  <div class="mono">06 / 09 · Процесс</div>
+  <h2 class="h2">Как мы работаем</h2>
+  <div class="relative mt-24"><div id="track"><div id="fill"></div></div>
+    <div id="steps" class="grid gap-12 lg:grid-cols-5"></div></div>
+</section>
+
+<!-- 07. КОМАНДА -->
+<section id="team" style="background:var(--bg2)">
+  <div class="mono">07 / 09 · Команда</div>
+  <h2 class="h2">Люди AXIOS</h2>
+  <div id="tms" class="grid gap-4 mt-16 sm:grid-cols-2 lg:grid-cols-4"></div>
+</section>
+
+<!-- 08. CTA -->
+<section id="cta" class="grid-bg">
+  <div class="mono mb-8">08 / 09 · Контакт</div>
+  <h2 class="h2" style="font-size:clamp(2.6rem,8vw,8rem)">Обсудим ваш проект?</h2>
+  <p class="mt-8 max-w-md" style="color:var(--sand)">Расскажите о задаче — мы вернёмся с идеями в течение 24 часов.</p>
+  <a href="contacts.html" class="btn solid mt-12" aria-label="Оставить заявку">Оставить заявку</a>
+</section>
+</main>
+
+<!-- ФУТЕР -->
+<footer id="contact">
+  <div class="big" aria-hidden="true">AXIOS</div>
+  <div class="grid gap-10 mt-12 sm:grid-cols-2 lg:grid-cols-4">
+    <div><div class="mono mb-4">Навигация</div><a href="about.html">О бюро</a><a href="services.html">Услуги</a><a href="projects.html">Проекты</a><a href="team.html">Команда</a><a href="contacts.html">Контакты</a></div>
+    <div><div class="mono mb-4">Контакты</div><a href="mailto:hello@axios.ru">hello@axios.ru</a><a href="tel:+78120000000">+7 812 000-00-00</a><span style="color:var(--mu)">Санкт-Петербург,<br>наб. реки Мойки, 12</span></div>
+    <div><div class="mono mb-4">Соцсети</div><a href="https://www.behance.net" target="_blank" rel="noopener">Behance</a><a href="https://www.instagram.com" target="_blank" rel="noopener">Instagram</a><a href="https://t.me" target="_blank" rel="noopener">Telegram</a><a href="https://www.linkedin.com" target="_blank" rel="noopener">LinkedIn</a></div>
+    <div><div class="mono mb-4">Правовое</div><a href="privacy.html">Политика конфиденциальности</a><span style="color:var(--mu)">© 2026 AXIOS</span></div>
+  </div>
+  <div class="mono mt-16 text-center">Сделано с любовью к форме / SPB — DXB — BER</div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/split-type@0.3.4/umd/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.394.0/dist/umd/lucide.min.js"></script>
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const RM=matchMedia('(prefers-reduced-motion:reduce)').matches, MOB=innerWidth<768;
+const U=(id,w)=>`https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=70`;
+
+/* ВАЖНО: переменные курсора объявлены ЗДЕСЬ, до использования */
+let cx=0,cy=0,rx=0,ry=0;
+
+/* ---------- Данные и генерация карточек ---------- */
+const PJ=[
+  ['ЖК «Северный луч»','Санкт-Петербург, 2024','1486406146926-c627a92ad1ab','Жилой комплекс · 42 000 м²','severny-luch'],
+  ['Резиденция «Дюны»','Сочи, 2023','1512917774080-9991f1c4c750','Частная резиденция · 1 200 м²','duny'],
+  ['Офис «Киберпорт»','Москва, 2024','1497366216548-37526070297c','Общественное пространство · 8 600 м²','cyberport']
+];
+$('#pjs').innerHTML=PJ.map((p,i)=>`<a href="404.html" class="pj cr r" aria-label="Проект ${p[0]}"><img src="${U(p[2],1600)}" alt="${p[0]} — ${p[1]}" loading="lazy"><span class="n">0${i+1}</span><i></i><i></i><i></i><i></i>
+<div class="cap"><h3 class="text-3xl md:text-5xl font-bold">${p[0]}</h3><p class="mono mt-3" style="color:var(--lime)">${p[1]} · ${p[3]}</p></div></a>`).join('');
+
+const SV=[
+  ['building-2','Архитектура','Проектирование зданий и комплексов','architecture'],
+  ['armchair','Интерьеры','Дизайн внутренних пространств','interiors'],
+  ['map','Градостроительство','Мастер-планы и urban-концепции','urban'],
+  ['landmark','Реставрация','Восстановление исторического наследия','restoration']
+];
+$('#svs').innerHTML=SV.map((s,i)=>`<a href="404.html" class="sv r"><div class="flex justify-between items-start mb-10"><div class="ic"><i data-lucide="${s[0]}" width="22"></i></div><span class="mono">0${i+1}</span></div>
+<h3 class="text-2xl font-medium">${s[1]}</h3><p class="mt-3 mb-8" style="color:var(--mu)">${s[2]}</p><span class="ar disp text-2xl">→</span></a>`).join('');
+
+const ST=[['Исследование','Анализ участка, контекста и потребностей людей.'],['Концепция','Форма, свет и масса: первые эскизы и модели.'],['Проектирование','Детальные решения, инженерия, документация.'],['Реализация','Сопровождение стройки и контроль качества.'],['Авторский надзор','Следим, чтобы построенное совпало с замыслом.']];
+$('#steps').innerHTML=ST.map((s,i)=>`<div class="step"><span class="mono lime">0${i+1}</span><h3 class="text-2xl font-medium mt-3">${s[0]}</h3><p class="mt-3" style="color:var(--mu);font-size:.95rem">${s[1]}</p></div>`).join('');
+
+const TM=[
+  ['Анна Ветрова','Основатель, главный архитектор','1573496359142-b8d87734a5a2'],
+  ['Михаил Орлов','Партнёр, руководитель проектов','1500648767791-00dcc994a43e'],
+  ['Екатерина Соколова','Креативный директор','1580489944761-15a19d654956'],
+  ['Дмитрий Лебедев','Ведущий архитектор','1472099645785-5658abf4ff4e']
+];
+$('#tms').innerHTML=TM.map((t,i)=>`<div class="tm cr r"><img src="${U(t[2],700)}" alt="Портрет: ${t[0]}, ${t[1]}" loading="lazy"><span class="mono absolute" style="left:1rem;top:1rem;z-index:3;color:var(--lime)">0${i+1}</span><i></i><i></i><i></i><i></i>
+<div class="cap"><h3 class="text-xl font-medium">${t[0]}</h3><p class="mono mt-2">${t[1]}</p></div></div>`).join('');
+lucide.createIcons();
+
+/* Манифест: слова разбиваем вручную */
+$('#mf').innerHTML=$('#mf').innerHTML.replace(/<span class="k">(.*?)<\/span>|([^<\s]+)/g,(m,k,w)=>k?k.split(' ').map(x=>`<span class="w k">${x}</span>`).join(' '):`<span class="w">${w}</span>`);
+
+/* Часы Санкт-Петербурга */
+const tick=()=>{$('#clock').textContent='SPB '+new Date().toLocaleTimeString('ru-RU',{timeZone:'Europe/Moscow',hour:'2-digit',minute:'2-digit'})+' / 14°C'};tick();setInterval(tick,3e4);
+
+/* Активный пункт меню (на главной ничего не подсветится) */
+const pg=document.body.dataset.page;
+$$('[data-p]').forEach(a=>{if(a.dataset.p===pg){a.classList.add('act');a.setAttribute('aria-current','page')}});
+
+/* Бургер-меню */
+let open=false;const bg=$('#burger');
+bg.onclick=()=>{open=!open;bg.textContent=open?'Закрыть':'Меню';bg.setAttribute('aria-expanded',open);$('#menu').setAttribute('aria-hidden',!open);
+ gsap.to('#menu',{clipPath:open?'inset(0 0 0% 0)':'inset(0 0 100% 0)',duration:.7,ease:'power3.inOut'});
+ if(open)gsap.from('#menu a',{y:60,opacity:0,stagger:.08,delay:.3,duration:.6})};
+$$('#menu a').forEach(a=>a.onclick=()=>{if(open)bg.click()});
+
+/* ---------- Three.js: параметрический каркас ---------- */
+const cv=$('#gl'),R=new THREE.WebGLRenderer({canvas:cv,antialias:!MOB,alpha:true});
+R.setPixelRatio(Math.min(devicePixelRatio,2));
+const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(50,1,.1,100);cam.position.z=6;
+const grp=new THREE.Group();sc.add(grp);
+const geo=new THREE.IcosahedronGeometry(1.7,MOB?2:4),p=geo.attributes.position,v=new THREE.Vector3();
+for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i).normalize();
+ const d=1+.18*Math.sin(v.x*4)*Math.cos(v.y*3+v.z*2)+.08*Math.sin(v.z*9);p.setXYZ(i,v.x*1.7*d,v.y*1.7*d,v.z*1.7*d)}
+geo.computeVertexNormals();
+grp.add(new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0x0c0c0e,polygonOffset:true,polygonOffsetFactor:1,polygonOffsetUnits:1})));
+grp.add(new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0xC6FF3D,wireframe:true,transparent:true,opacity:.28})));
+const N=MOB?250:900,pa=new Float32Array(N*3);for(let i=0;i<N*3;i++)pa[i]=(Math.random()-.5)*22;
+const pg2=new THREE.BufferGeometry();pg2.setAttribute('position',new THREE.BufferAttribute(pa,3));
+sc.add(new THREE.Points(pg2,new THREE.PointsMaterial({color:0xE8E2D5,size:.025,transparent:true,opacity:.6})));
+[[60,0,0],[0,60,0],[0,0,60]].forEach(a=>{const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-a[0],-a[1],-a[2]),new THREE.Vector3(a[0],a[1],a[2])]);
+ sc.add(new THREE.Line(g,new THREE.LineBasicMaterial({color:0xC6FF3D,transparent:true,opacity:.18})))});
+const rs=()=>{const h=$('#hero');R.setSize(h.clientWidth,h.clientHeight,false);cam.aspect=h.clientWidth/h.clientHeight;cam.updateProjectionMatrix()};rs();addEventListener('resize',rs);
+let mx=0,my=0,tx=0,ty=0,sp=0;
+addEventListener('pointermove',e=>{mx=e.clientX/innerWidth-.5;my=e.clientY/innerHeight-.5;cx=e.clientX;cy=e.clientY});
+let vis=true;new IntersectionObserver(e=>vis=e[0].isIntersecting).observe($('#hero'));
+const clk=new THREE.Clock();
+(function loop(){requestAnimationFrame(loop);if(!vis)return;
+ const t=clk.getElapsedTime();tx+=(mx-tx)*.05;ty+=(my-ty)*.05;
+ grp.rotation.y=(RM?0:t*.15)+tx*1.2+sp*2;grp.rotation.x=(RM?0:t*.08)+ty*.8;
+ grp.position.y=sp*2.2;grp.scale.setScalar(1+sp*.6);cam.position.x=tx*.5;cam.lookAt(0,0,0);R.render(sc,cam)})();
+
+/* ---------- Курсор ---------- */
+const dot=$('.dot'),ring=$('.ring');
+(function cu(){requestAnimationFrame(cu);rx+=(cx-rx)*.15;ry+=(cy-ry)*.15;
+ dot.style.transform=`translate(${cx}px,${cy}px)`;ring.style.transform=`translate(${rx}px,${ry}px)`})();
+document.addEventListener('pointerover',e=>{const h=e.target.closest('a,button');ring.classList.toggle('big',!!h);dot.style.opacity=h?0:1});
+
+/* ---------- Анимации ---------- */
+gsap.registerPlugin(ScrollTrigger);
+let lenis;
+if(!RM){lenis=new Lenis({lerp:.09});lenis.on('scroll',ScrollTrigger.update);gsap.ticker.add(t=>lenis.raf(t*1000));gsap.ticker.lagSmoothing(0);
+ $$('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{const h=a.getAttribute('href');if(h.length>1){e.preventDefault();lenis.scrollTo(h)}}))}
+
+/* Хедер + прогресс-бар скролла */
+ScrollTrigger.create({start:0,end:'max',onUpdate:s=>{
+  $('#hd').classList.toggle('sc',s.scroll()>60);
+  $('#prog').style.transform=`scaleX(${s.progress})`;
+}});
+
+const split=new SplitType('#hero h1',{types:'lines,chars'});
+function heroIntro(){
+ gsap.from(split.chars,{yPercent:115,duration:1.1,stagger:.03,ease:'power4.out'});
+ gsap.from(['.sub','#hd','.hz:not(:has(h1))'],{opacity:0,y:20,duration:1,delay:.6,stagger:.05});
+}
+function scrollFx(){
+ /* Hero: форма реагирует на скролл */
+ ScrollTrigger.create({trigger:'#hero',start:'top top',end:'bottom top',scrub:true,onUpdate:s=>sp=s.progress});
+ /* Манифест */
+ gsap.to('#mf .w',{color:'#F5F5F0',stagger:.15,ease:'none',scrollTrigger:{trigger:'#mf',start:'top 80%',end:'bottom 50%',scrub:true}});
+ gsap.to('#mf .k',{color:'#C6FF3D',ease:'none',scrollTrigger:{trigger:'#mf',start:'bottom 62%',end:'bottom 48%',scrub:true}});
+ /* Параллакс фото ТОЛЬКО для проектов (не для команды) */
+ $$('.pj img').forEach(im=>gsap.fromTo(im,{yPercent:-6},{yPercent:6,ease:'none',scrollTrigger:{trigger:im.parentElement,start:'top bottom',end:'bottom top',scrub:true}}));
+ /* Появление карточек */
+ gsap.set('.r',{opacity:0,y:60});
+ ScrollTrigger.batch('.r',{start:'top 88%',onEnter:b=>gsap.to(b,{opacity:1,y:0,stagger:.15,duration:.9,ease:'power3.out'})});
+ /* Заголовки h2 по буквам */
+ $$('.h2').forEach(h=>{const s=new SplitType(h,{types:'chars'});gsap.from(s.chars,{yPercent:100,opacity:0,stagger:.025,duration:.8,ease:'power3.out',scrollTrigger:{trigger:h,start:'top 85%'}})});
+ /* Счётчики */
+ $$('[data-n]').forEach(el=>{const o={v:0};gsap.to(o,{v:+el.dataset.n,duration:2,ease:'power2.out',onUpdate:()=>el.textContent=Math.round(o.v),scrollTrigger:{trigger:el,start:'top 90%',once:true}})});
+ /* Процесс */
+ gsap.to('#fill',{scaleX:1,ease:'none',scrollTrigger:{trigger:'#steps',start:'top 75%',end:'bottom 60%',scrub:true}});
+ $$('.step').forEach((s,i)=>{gsap.set(s,{opacity:.15});gsap.to(s,{opacity:1,scrollTrigger:{trigger:s,start:'top 78%',toggleActions:'play none none reverse'}})});
+}
+/* Финальный вид без анимаций */
+if(RM){$('#pre').remove();$$('[data-n]').forEach(e=>e.textContent=e.dataset.n);$('#fill').style.transform='none';$$('#mf .w').forEach(w=>w.style.color='#F5F5F0');$$('.cap').forEach(c=>{c.style.opacity=1;c.style.transform='none'})}
+else{
+ /* Прелоадер */
+ lenis&&lenis.stop();
+ const tl=gsap.timeline(),o={v:0};
+ tl.to('#logo path,#logo circle',{strokeDashoffset:0,duration:1.4,stagger:.12,ease:'power2.inOut'},0)
+   .to('#bar',{scaleX:1,duration:1.8,ease:'power2.inOut'},0)
+   .to(o,{v:100,duration:1.8,ease:'power2.inOut',onUpdate:()=>$('#pct').textContent=String(Math.round(o.v)).padStart(3,'0')+'%'},0)
+   .to('#logo path,#logo circle',{stroke:'#C6FF3D',duration:.25},1.9)
+   .to('#logo',{filter:'drop-shadow(0 0 16px #C6FF3D)',duration:.25},1.9)
+   .to('#pre .mid,#pre .c',{opacity:0,duration:.3},2.15)
+   .to('#pre .cur-t',{yPercent:-100,duration:.8,ease:'power4.inOut'},2.3)
+   .to('#pre .cur-b',{yPercent:100,duration:.8,ease:'power4.inOut'},2.3)
+   .add(()=>{$('#pre').remove();lenis&&lenis.start();heroIntro()},2.6);
+}
+scrollFx();
+</script>
+</body>
+</html>

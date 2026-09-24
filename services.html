@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Услуги — AXIOS</title>
+<meta name="description" content="Архитектура, интерьеры, градостроительство и реставрация — четыре направления бюро AXIOS.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+:root{--bg:#0A0A0B;--bg2:#121214;--bg3:#1A1A1E;--lime:#C6FF3D;--sand:#E8E2D5;--tx:#F5F5F0;--mu:#8A8A8F}
+html{scrollbar-width:none;background:var(--bg)}html::-webkit-scrollbar{display:none}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:Inter,sans-serif;overflow-x:hidden}
+h1,h2,h3,.disp{font-family:'Space Grotesk',sans-serif;letter-spacing:-.02em}
+.mono{font-family:'JetBrains Mono',monospace;font-size:.72rem;text-transform:uppercase;letter-spacing:.14em;color:var(--mu)}
+.lime{color:var(--lime)}
+:focus-visible{outline:2px solid var(--lime);outline-offset:4px}
+section{position:relative;padding:15vh 5vw}
+.grid-bg{background-image:linear-gradient(rgba(245,245,240,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(245,245,240,.03) 1px,transparent 1px);background-size:60px 60px}
+.h2{font-size:clamp(2.4rem,6vw,5.5rem);line-height:.95;font-weight:700;margin-top:1.5rem}
+/* Шум и прогресс-бар */
+#grain{position:fixed;inset:0;z-index:98;pointer-events:none;opacity:.03;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E")}
+#prog{position:fixed;top:0;left:0;right:0;height:2px;background:var(--lime);transform:scaleX(0);transform-origin:left;z-index:60}
+/* Прелоадер */
+#pre{position:fixed;inset:0;z-index:100;pointer-events:none}
+#pre .t,#pre .b{position:absolute;left:0;right:0;height:50.1%;background:var(--bg)}#pre .t{top:0}#pre .b{bottom:0}
+#pre .mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2}
+#logo path,#logo circle{fill:none;stroke:var(--tx);stroke-width:1.5;stroke-dasharray:1;stroke-dashoffset:1}
+#bar{width:min(320px,60vw);height:1px;background:var(--lime);transform:scaleX(0);transform-origin:left;margin-top:2rem}
+#pre .c{position:absolute;z-index:3}
+/* Курсор */
+.dot,.ring{position:fixed;top:0;left:0;pointer-events:none;z-index:99;border-radius:50%}
+.dot{width:6px;height:6px;background:var(--lime);margin:-3px 0 0 -3px}
+.ring{width:38px;height:38px;margin:-19px 0 0 -19px;border:1px solid var(--lime);transition:width .3s,height .3s,margin .3s,background .3s}
+.ring.big{width:72px;height:72px;margin:-36px 0 0 -36px;background:rgba(198,255,61,.08)}
+@media(hover:none),(max-width:768px){.dot,.ring{display:none}}
+@media(hover:hover) and (min-width:769px){body,a,button{cursor:none}}
+/* Хедер */
+header{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:1.2rem 5vw;transition:background .4s,backdrop-filter .4s}
+header.sc{background:rgba(10,10,11,.7);backdrop-filter:blur(14px)}
+.brand{font:700 1.4rem 'Space Grotesk';letter-spacing:.18em;display:flex;align-items:center;gap:.7rem}
+.brand i{width:1px;height:22px;background:var(--lime);position:relative}.brand i:after{content:"";position:absolute;left:-2px;top:8px;width:5px;height:5px;border-radius:50%;background:var(--lime)}
+.brand span{display:inline-block;transition:transform .4s}.brand:hover span{transform:scale(1.02)}
+.nl{position:relative;font-size:.9rem;padding:.3rem 0}
+.nl:after,.ul:after{content:"";position:absolute;left:0;bottom:0;height:1px;width:100%;background:var(--lime);transform:scaleX(0);transform-origin:left;transition:transform .4s}
+.nl:hover:after,.ul:hover:after,.nl.act:after{transform:scaleX(1)}.nl.act{color:var(--lime)}.ul{position:relative}
+.btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:.6rem;border:1px solid var(--lime);color:var(--lime);padding:.8rem 1.5rem;font-size:.9rem;background:transparent;z-index:0;transition:color .4s}
+.btn:before{content:"";position:absolute;left:50%;top:50%;width:0;height:0;border-radius:50%;background:var(--lime);transform:translate(-50%,-50%);transition:width .5s,height .5s;z-index:-1}
+.btn:hover{color:var(--bg)}.btn:hover:before{width:320%;padding-bottom:320%;height:0}
+.btn.solid{background:var(--lime);color:var(--bg);font-size:1.05rem;padding:1.2rem 2.6rem}
+.btn.solid:before{background:var(--bg)}.btn.solid:hover{color:var(--lime)}
+#menu{position:fixed;inset:0;z-index:45;background:var(--bg);display:flex;flex-direction:column;justify-content:center;padding:0 8vw;gap:.5rem;clip-path:inset(0 0 100% 0)}
+#menu a{font:700 clamp(2.2rem,10vw,4rem) 'Space Grotesk'}#menu a.act{color:var(--lime)}
+.line{overflow:hidden;padding-bottom:.08em}
+/* Блоки услуг */
+.svb{display:grid;gap:2rem;padding:4rem 0;border-top:1px solid rgba(198,255,61,.2)}
+@media(min-width:900px){.svb{grid-template-columns:1.1fr 1fr;gap:4rem;align-items:center}}
+.ph{position:relative;overflow:hidden;aspect-ratio:4/3;background:var(--bg3)}
+.ph img{position:absolute;left:0;top:-8%;width:100%;height:116%;object-fit:cover;filter:brightness(.8);transition:transform 1s cubic-bezier(.2,.7,.2,1)}
+.svb:hover .ph img{transform:scale(1.05)}
+.cr i{position:absolute;width:26px;height:26px;border:0 solid var(--lime);opacity:0;transition:.4s;z-index:2}
+.cr i:nth-child(1){top:18px;left:18px;border-width:2px 0 0 2px;transform:translate(12px,12px)}
+.cr i:nth-child(2){top:18px;right:18px;border-width:2px 2px 0 0;transform:translate(-12px,12px)}
+.cr i:nth-child(3){bottom:18px;left:18px;border-width:0 0 2px 2px;transform:translate(12px,-12px)}
+.cr i:nth-child(4){bottom:18px;right:18px;border-width:0 2px 2px 0;transform:translate(-12px,-12px)}
+.svb:hover .cr i{opacity:1;transform:none}
+.svb .num{font:500 clamp(3rem,6vw,5rem)/1 'JetBrains Mono';color:var(--lime)}
+.svb li{display:flex;gap:.8rem;padding:.7rem 0;border-bottom:1px solid rgba(245,245,240,.08);color:var(--tx)}
+.svb li:before{content:"";width:6px;height:6px;margin-top:.6rem;background:var(--lime);flex:none}
+.more{display:inline-flex;align-items:center;gap:.8rem;color:var(--lime);font:500 1.1rem 'Space Grotesk';padding:.4rem 0}
+.more span{display:inline-block;transition:transform .4s}.svb:hover .more span,.more:hover span{transform:translateX(12px)}
+/* Процесс */
+#track{position:absolute;left:0;right:0;top:0;height:1px;background:rgba(198,255,61,.15)}
+#fill{height:1px;background:var(--lime);transform:scaleX(0);transform-origin:left;box-shadow:0 0 12px var(--lime)}
+.step{position:relative;padding-top:2rem}
+.step:before{content:"";position:absolute;top:-4px;left:0;width:9px;height:9px;border-radius:50%;background:var(--lime)}
+.step:after{content:"";position:absolute;top:-1px;left:0;width:100%;height:1px;background:var(--lime);transform:scaleX(0);transform-origin:left;transition:transform .7s}
+.step:hover:after{transform:scaleX(1)}
+/* Цифры */
+.st{border-left:1px solid rgba(198,255,61,.2);padding:0 1.5rem}.st:first-child{border:0}
+@media(max-width:1023px){.st:nth-child(3){border:0}}
+.st b{display:block;font:700 clamp(3.5rem,8vw,7.5rem)/1 'Space Grotesk';color:var(--lime)}
+footer{border-top:1px solid var(--lime);padding:6vh 5vw 3vh}
+.big{font:700 24vw/.85 'Space Grotesk';color:transparent;-webkit-text-stroke:1px var(--lime);text-align:center;letter-spacing:-.03em;user-select:none}
+footer a{display:block;color:var(--mu);padding:.2rem 0;transition:color .3s}footer a:hover{color:var(--lime)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body data-page="services">
+<div id="grain" aria-hidden="true"></div>
+<div id="prog" aria-hidden="true"></div>
+
+<!-- Прелоадер (1.5 с): логотип рисуется, счётчик, шторки -->
+<div id="pre" aria-hidden="true">
+  <div class="t"></div><div class="b"></div>
+  <div class="mid">
+    <svg id="logo" width="260" height="52" viewBox="0 0 250 44" aria-label="AXIOS">
+      <path pathLength="1" d="M2 42 L22 2 L42 42 M10 27 H34"/><path pathLength="1" d="M56 2 L96 42 M96 2 L56 42"/>
+      <path pathLength="1" d="M110 2 V42"/><circle pathLength="1" cx="146" cy="22" r="20"/>
+      <path pathLength="1" d="M228 8 C218 -2 188 2 194 16 C200 28 230 22 226 36 C222 46 196 44 190 36"/>
+    </svg>
+    <div id="bar"></div>
+  </div>
+  <div class="c mono" style="left:5vw;top:2rem">AXIOS / Architecture bureau / Est. 2012</div>
+  <div class="c mono" style="right:5vw;top:2rem">Loading assets</div>
+  <div class="c lime" id="pct" style="right:5vw;bottom:2rem;font:500 2rem 'JetBrains Mono'">000%</div>
+</div>
+
+<div class="dot"></div><div class="ring"></div>
+
+<!-- ХЕДЕР: активный пункт определяется по body[data-page] -->
+<header id="hd">
+  <a href="index.html" class="brand" aria-label="AXIOS — на главную"><i></i><span>AXIOS</span></a>
+  <nav class="hidden lg:flex gap-10" aria-label="Основная навигация">
+    <a class="nl" data-p="about" href="about.html">О бюро</a><a class="nl" data-p="services" href="services.html">Услуги</a><a class="nl" data-p="projects" href="projects.html">Проекты</a><a class="nl" data-p="team" href="team.html">Команда</a><a class="nl" data-p="contacts" href="contacts.html">Контакты</a>
+  </nav>
+  <a href="contacts.html" class="btn hidden lg:inline-flex">Обсудить проект</a>
+  <button id="burger" class="lg:hidden mono" style="color:var(--lime)" aria-label="Открыть меню" aria-expanded="false">Меню</button>
+</header>
+<div id="menu" aria-hidden="true">
+  <a data-p="about" href="about.html">О бюро</a><a data-p="services" href="services.html">Услуги</a><a data-p="projects" href="projects.html">Проекты</a><a data-p="team" href="team.html">Команда</a><a data-p="contacts" href="contacts.html">Контакты</a>
+</div>
+
+<main>
+<!-- 01. HERO страницы -->
+<section id="hero" class="grid-bg" style="min-height:100vh;padding-top:9rem;display:flex;flex-direction:column">
+  <nav class="mono crumbs" aria-label="Хлебные крошки"><a href="index.html" class="ul" style="color:var(--tx)">Главная</a> / <span>Услуги</span></nav>
+  <div class="mono mt-16">01 / 05 · Услуги</div>
+  <div class="my-auto py-12 flex flex-col gap-12 lg:flex-row lg:items-end lg:justify-between">
+    <div>
+      <h1 style="font-size:clamp(3rem,9vw,8rem);line-height:.92;font-weight:700"><div class="line">Что мы</div><div class="line">проектируем.</div></h1>
+      <p class="sub mt-8 max-w-xl" style="color:var(--sand);font-size:1.2rem;line-height:1.5">Четыре направления, в которых мы работаем. Каждое — со своим процессом, командой и подходом.</p>
+    </div>
+    <div class="sub mono leading-8" style="border-left:1px solid var(--lime);padding-left:1.2rem">Architecture · Interiors<br>Urban · Restoration<br><span class="lime">4 directions</span> · 24 architects</div>
+  </div>
+</section>
+
+<!-- 02. СПИСОК УСЛУГ -->
+<section id="list" style="background:var(--bg2)">
+  <div class="mono">02 / 05 · Направления</div>
+  <div id="svl" class="mt-16"></div>
+</section>
+
+<!-- 03. ПРОЦЕСС -->
+<section id="process">
+  <div class="mono">03 / 05 · Процесс</div>
+  <h2 class="h2 sp">Как мы работаем</h2>
+  <div class="relative mt-24"><div id="track"><div id="fill"></div></div>
+    <div id="steps" class="grid gap-12 lg:grid-cols-5"></div></div>
+</section>
+
+<!-- 04. ЦИФРЫ ПО УСЛУГАМ -->
+<section style="background:var(--bg2);padding:12vh 5vw">
+  <div class="mono mb-12">04 / 05 · В цифрах</div>
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-y-12">
+    <div class="st"><b data-n="42">0</b><span class="mono">проекта в архитектуре</span></div>
+    <div class="st"><b data-n="28">0</b><span class="mono">интерьеров</span></div>
+    <div class="st"><b data-n="11">0</b><span class="mono">мастер-планов</span></div>
+    <div class="st"><b data-n="6">0</b><span class="mono">реставраций</span></div>
+  </div>
+</section>
+
+<!-- 05. CTA -->
+<section id="cta" class="grid-bg" style="min-height:70vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+  <div class="mono mb-8">05 / 05 · Контакт</div>
+  <h2 class="h2 sp" style="font-size:clamp(2.6rem,7vw,7rem)">Не нашли нужную услугу?</h2>
+  <p class="mt-8 max-w-md cb" style="color:var(--sand)">Расскажите о задаче — мы предложим решение в течение 24 часов.</p>
+  <div class="flex flex-wrap justify-center gap-4 mt-12 cb">
+    <a href="contacts.html" class="btn solid">Обсудить проект</a>
+    <a href="projects.html" class="btn" style="padding:1.2rem 2.6rem;font-size:1.05rem">Смотреть проекты</a>
+  </div>
+</section>
+</main>
+
+<!-- ФУТЕР -->
+<footer>
+  <div class="big" aria-hidden="true">AXIOS</div>
+  <div class="grid gap-10 mt-12 sm:grid-cols-2 lg:grid-cols-4">
+    <div><div class="mono mb-4">Навигация</div><a href="about.html">О бюро</a><a href="services.html">Услуги</a><a href="projects.html">Проекты</a><a href="team.html">Команда</a><a href="contacts.html">Контакты</a></div>
+    <div><div class="mono mb-4">Контакты</div><a href="mailto:hello@axios.ru">hello@axios.ru</a><a href="tel:+78120000000">+7 812 000-00-00</a><span style="color:var(--mu)">Санкт-Петербург,<br>наб. реки Мойки, 12</span></div>
+    <div><div class="mono mb-4">Соцсети</div><a href="https://www.behance.net" target="_blank" rel="noopener">Behance</a><a href="https://www.instagram.com" target="_blank" rel="noopener">Instagram</a><a href="https://t.me" target="_blank" rel="noopener">Telegram</a><a href="https://www.linkedin.com" target="_blank" rel="noopener">LinkedIn</a></div>
+    <div><div class="mono mb-4">Правовое</div><a href="privacy.html">Политика конфиденциальности</a><span style="color:var(--mu)">© 2026 AXIOS</span></div>
+  </div>
+  <div class="mono mt-16 text-center">Сделано с любовью к форме / SPB — DXB — BER</div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/split-type@0.3.4/umd/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.394.0/dist/umd/lucide.min.js"></script>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const U=(id,w)=>`https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=70`;
+
+/* ---------- Данные и генерация блоков ---------- */
+const SV=[
+['Архитектура','architecture','Проектирование зданий и комплексов — от частных резиденций до общественных пространств. Полный цикл: концепция, проектная документация, авторский надзор.',['Концептуальное проектирование','Архитектурная документация','Рабочая документация','Авторский надзор'],'1487958449943-2429e8be8625','Современное здание со стеклянным фасадом'],
+['Интерьеры','interiors','Дизайн внутренних пространств — от концепции до реализации. Работаем с жилыми, офисными и общественными интерьерами.',['Концепция интерьера','Планировочные решения','Подбор материалов и мебели','Авторский надзор реализации'],'1618221195710-dd6b41faaea6','Тёмный интерьер гостиной'],
+['Градостроительство','urban','Мастер-планы и urban-концепции. Работаем с девелоперами, городами и сообществами.',['Анализ территории','Мастер-план','Транспортная и социальная инфраструктура','Экономика проекта'],'1477959858617-67f85cf4f1df','Вид на город сверху'],
+['Реставрация','restoration','Восстановление исторического наследия. Работаем с памятниками архитектуры XVIII–XX веков.',['Историко-архивные исследования','Проект реставрации','Работа с подрядчиками','Научное сопровождение'],'1552832230-c0197dd311b5','Фасад исторического здания']];
+$('#svl').innerHTML=SV.map((s,i)=>`<article class="svb sr">
+<div class="ph cr"><img src="${U(s[4],1400)}" alt="${s[5]}" loading="lazy"><i></i><i></i><i></i><i></i></div>
+<div><div class="num">0${i+1}</div><h2 class="mt-4" style="font-size:clamp(2rem,4vw,3.6rem);font-weight:700;line-height:1">${s[0]}</h2>
+<p class="mt-5 max-w-lg" style="color:var(--mu);line-height:1.6">${s[2]}</p>
+<ul class="mt-6 max-w-lg list-none p-0">${s[3].map(x=>`<li>${x}</li>`).join('')}</ul>
+<a href="404.html" class="more mt-8" aria-label="Подробнее: ${s[0]}">Подробнее <span>→</span></a></div></article>`).join('');
+const ST=[['Исследование','Анализ участка, контекста, потребностей.'],['Концепция','Форма, свет, масса: первые эскизы.'],['Проектирование','Детальные решения, инженерия, документация.'],['Реализация','Сопровождение стройки, контроль качества.'],['Авторский надзор','Следим, чтобы построенное совпало с замыслом.']];
+$('#steps').innerHTML=ST.map((s,i)=>`<div class="step"><span class="mono lime">0${i+1}</span><h3 class="mt-3" style="font-size:1.8rem;font-weight:500">${s[0]}</h3><p class="mt-3" style="color:var(--mu);font-size:.95rem;line-height:1.55">${s[1]}</p></div>`).join('');
+
+/* Активный пункт меню по data-page */
+const pg=document.body.dataset.page;
+$$('[data-p]').forEach(a=>{if(a.dataset.p===pg){a.classList.add('act');a.setAttribute('aria-current','page')}});
+
+/* Бургер-меню */
+let open=false;const bg=$('#burger');
+bg.onclick=()=>{open=!open;bg.textContent=open?'Закрыть':'Меню';bg.setAttribute('aria-expanded',open);$('#menu').setAttribute('aria-hidden',!open);
+ gsap.to('#menu',{clipPath:open?'inset(0 0 0% 0)':'inset(0 0 100% 0)',duration:.7,ease:'power3.inOut'});
+ if(open)gsap.from('#menu a',{y:60,opacity:0,stagger:.08,delay:.3,duration:.6})};
+$$('#menu a').forEach(a=>a.onclick=()=>{if(open)bg.click()});
+
+/* Курсор: точка + кольцо с lerp */
+let cx=0,cy=0,rx=0,ry=0;const dot=$('.dot'),ring=$('.ring');
+addEventListener('pointermove',e=>{cx=e.clientX;cy=e.clientY});
+(function cu(){requestAnimationFrame(cu);rx+=(cx-rx)*.15;ry+=(cy-ry)*.15;dot.style.transform=`translate(${cx}px,${cy}px)`;ring.style.transform=`translate(${rx}px,${ry}px)`})();
+document.addEventListener('pointerover',e=>{const h=e.target.closest('a,button');ring.classList.toggle('big',!!h);dot.style.opacity=h?0:1});
+
+/* ---------- GSAP ---------- */
+gsap.registerPlugin(ScrollTrigger);
+let lenis;
+if(!RM){lenis=new Lenis({lerp:.09});lenis.on('scroll',ScrollTrigger.update);gsap.ticker.add(t=>lenis.raf(t*1000));gsap.ticker.lagSmoothing(0)}
+/* Хедер с blur и прогресс-бар скролла */
+ScrollTrigger.create({start:0,end:'max',onUpdate:s=>{$('#hd').classList.toggle('sc',s.scroll()>60);$('#prog').style.transform=`scaleX(${s.progress})`}});
+
+const heroSplit=new SplitType('#hero h1',{types:'lines,chars'});
+function heroIntro(){
+ gsap.from(heroSplit.chars,{yPercent:115,duration:1.1,stagger:.035,ease:'power4.out'});
+ gsap.from('.sub',{opacity:0,y:30,duration:1,delay:.7,stagger:.15,ease:'power3.out'});
+ gsap.from(['.crumbs','#hd'],{opacity:0,y:-10,duration:.8,delay:.4});
+}
+function scrollFx(){
+ /* Заголовки секций по буквам */
+ $$('.sp').forEach(h=>{const s=new SplitType(h,{types:'chars'});gsap.from(s.chars,{yPercent:100,opacity:0,stagger:.025,duration:.8,ease:'power3.out',scrollTrigger:{trigger:h,start:'top 85%'}})});
+ gsap.from('.cb',{opacity:0,y:40,stagger:.15,duration:.9,ease:'power3.out',scrollTrigger:{trigger:'#cta',start:'top 55%'}});
+ /* Блоки услуг: fade-up, номер сдвигается слева, фото — параллакс */
+ $$('.sr').forEach(b=>{
+  gsap.from(b,{opacity:0,y:70,duration:1,ease:'power3.out',scrollTrigger:{trigger:b,start:'top 82%'}});
+  gsap.from(b.querySelector('.num'),{x:-50,opacity:0,duration:1,delay:.2,ease:'power3.out',scrollTrigger:{trigger:b,start:'top 82%'}});
+  gsap.fromTo(b.querySelector('img'),{yPercent:-5},{yPercent:5,ease:'none',scrollTrigger:{trigger:b,start:'top bottom',end:'bottom top',scrub:true}});
+ });
+ /* Процесс: линия прорастает слева направо, этапы проявляются */
+ gsap.to('#fill',{scaleX:1,ease:'none',scrollTrigger:{trigger:'#steps',start:'top 75%',end:'bottom 60%',scrub:true}});
+ $$('.step').forEach(s=>{gsap.set(s,{opacity:.15});gsap.to(s,{opacity:1,scrollTrigger:{trigger:s,start:'top 78%',toggleActions:'play none none reverse'}})});
+ /* Счётчики */
+ $$('[data-n]').forEach(el=>{const o={v:0};gsap.to(o,{v:+el.dataset.n,duration:2,ease:'power2.out',onUpdate:()=>el.textContent=Math.round(o.v),scrollTrigger:{trigger:el,start:'top 90%',once:true}})});
+}
+if(RM){$('#pre').remove();$$('[data-n]').forEach(e=>e.textContent=e.dataset.n);$('#fill').style.transform='none'}
+else{
+ lenis&&lenis.stop();
+ const o={v:0},tl=gsap.timeline();
+ tl.to('#logo path,#logo circle',{strokeDashoffset:0,duration:.8,stagger:.06,ease:'power2.inOut'},0)
+   .to('#bar',{scaleX:1,duration:1,ease:'power2.inOut'},0)
+   .to(o,{v:100,duration:1,ease:'power2.inOut',onUpdate:()=>$('#pct').textContent=String(Math.round(o.v)).padStart(3,'0')+'%'},0)
+   .to('#logo path,#logo circle',{stroke:'#C6FF3D',duration:.15},1)
+   .to('#pre .mid,#pre .c',{opacity:0,duration:.2},1.15)
+   .to('#pre .t',{yPercent:-100,duration:.55,ease:'power4.inOut'},1.2)
+   .to('#pre .b',{yPercent:100,duration:.55,ease:'power4.inOut'},1.2)
+   .add(()=>{$('#pre').remove();lenis&&lenis.start();heroIntro()},1.5);
+}
+scrollFx();
+</script>
+</body>
+</html>
